@@ -1,26 +1,51 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from 'react'
+import './App.css'
+// import * as monaco from "monaco-editor/esm/vs/editor/editor.api"
+import * as monaco from "monaco-editor"
+import { Button, Slider, Stack, TextField } from '@mui/material'
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+export default class App extends React.Component {
+  private monacoEditorContainer: HTMLDivElement | null | undefined
+  private monacoEditor: monaco.editor.IStandaloneCodeEditor | undefined
+
+  componentDidMount() {
+    if (this.monacoEditorContainer) {
+      console.log('creating')
+      this.monacoEditor = monaco.editor.create(this.monacoEditorContainer, {
+        value: "// First line\nfunction hello() {\n\talert('Hello world!');\n}\n// Last line",
+        language: 'javascript',
+      })
+      setTimeout(() => {
+        if (this.monacoEditor) {
+          this.monacoEditor.layout()
+          console.log('layouting')
+        }
+      }, 3000);
+    }
+  }
+
+  // componentDidUpdate() {
+  //   if (this.monacoEditor) {
+  //     console.log('layouting')
+  //     this.monacoEditor.layout()
+  //   }
+  // }
+
+  render(): React.ReactNode {
+    return (
+      <div id="main">
+        <div id="visualizerContainer">
+        </div>
+        <div id="editorPanel">
+          <TextField label="Number of Elements" variant="filled" />
+          <Button variant="outlined">Create</Button>
+          <div id="monacoEditorContainer" ref={ref => this.monacoEditorContainer = ref}></div>
+          <div className='padding'>
+            <Slider defaultValue={50} />
+          </div>
+          <Button variant="contained">Play</Button>
+        </div>
+      </div>
+    )
+  }
 }
-
-export default App;

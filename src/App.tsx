@@ -15,12 +15,6 @@ export default class App extends React.Component {
         value: "// First line\nfunction hello() {\n\talert('Hello world!');\n}\n// Last line",
         language: 'javascript',
       })
-      setTimeout(() => {
-        if (this.monacoEditor) {
-          this.monacoEditor.layout()
-          console.log('layouting')
-        }
-      }, 3000);
     }
   }
 

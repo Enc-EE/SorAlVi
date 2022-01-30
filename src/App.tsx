@@ -1,7 +1,7 @@
 import React from 'react'
 import './App.css'
 import * as monaco from "monaco-editor"
-import { Button, Slider, Stack, TextField } from '@mui/material'
+import { Button, Link, Slider, Stack, TextField } from '@mui/material'
 import { AlgorithmEngine } from './algorithmEngine'
 
 interface State {
@@ -153,6 +153,7 @@ export default class App extends React.Component<{}, State> {
             </div>
             <Button onClick={_ => this.runAlgorithm()} disabled={this.state.isPlayMode} variant="outlined">Execute Algorithm</Button>
             <Button onClick={_ => this.playPause()} variant="contained">{this.state.isPlayMode ? 'Pause' : 'Play'}</Button>
+            <Link href="https://github.com/Enc-EE/SorAlVi" target="_blank" >See Project on GitHub</Link>
           </div>
         </div>
       </div>

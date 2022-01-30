@@ -1,7 +1,7 @@
 {
   "name": "soralvi",
-  "version": "0.1.0",
-  "private": true,
+  "description": "Sorting Algorithm Visualizer",
+  "version": "0.0.1",
   "dependencies": {
     "@emotion/react": "^11.7.1",
     "@emotion/styled": "^11.6.0",
@@ -47,5 +47,9 @@
   },
   "devDependencies": {
     "react-app-rewired": "^2.1.11"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Enc-EE/csvi.git"
   }
 }

@@ -42,7 +42,6 @@ export default class App extends React.Component<{}, State> {
         value: this.firstAlgorithm,
         language: 'javascript',
       })
-      // this.monacoEditor.change
     }
     if (this.visualizerContainer) {
       console.log('creating canvas')

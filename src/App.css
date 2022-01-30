@@ -3,6 +3,10 @@ html, body, #root, #main {
   height: 100%;
 }
 
+#root {
+  overflow: hidden;
+}
+
 #main {
   display: flex;
   width: 100%;

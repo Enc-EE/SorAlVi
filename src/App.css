@@ -16,13 +16,34 @@ html, body, #root, #main {
 #editorPanel {
   display: flex;
   flex-direction: column;
+  gap: 5px;
 }
 
 #monacoEditorContainer {
-  width: 500px;
-  flex-grow: 1;
+  width: 640px;
+  flex: 1 1 auto;
 }
 
 .padding {
   padding: 12px 28px;
+}
+
+.number-input {
+  display: flex;
+  align-items: center;
+}
+
+.panel-actions {
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 auto;
+  gap: 7px
+}
+
+.number-input .MuiTextField-root {
+  flex-grow: 1;
+}
+
+.panel-padding {
+  /* margin: 3px 0; */
 }

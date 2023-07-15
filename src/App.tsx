@@ -1,161 +1,179 @@
-import React from 'react'
-import './App.css'
-import * as monaco from "monaco-editor"
-import { Button, Link, Slider, Stack, TextField } from '@mui/material'
-import { AlgorithmEngine } from './algorithmEngine'
+import { createRef, useCallback, useEffect, useState } from "react";
+import * as monaco from "monaco-editor";
+import { Button, Link, TextField } from "@mui/material";
+import { algen } from "./algorithmEngine";
+import "./App.css";
 
-interface State {
-  isPlayMode: boolean
-  numberOfNumbersInput: number
-}
+let monacoEditor: monaco.editor.IStandaloneCodeEditor | undefined;
+let lastFrameTime: DOMHighResTimeStamp | undefined;
 
-export default class App extends React.Component<{}, State> {
-  private monacoEditorContainer: HTMLDivElement | null | undefined
-  private monacoEditor: monaco.editor.IStandaloneCodeEditor | undefined
-  private visualizerContainer: HTMLDivElement | null | undefined
+// eslint-disable-next-line @typescript-eslint/ban-types
+export const App = () => {
+  const [isPlayMode, setIsPlayMode] = useState(false);
+  const [numberOfNumbersInput, setNumberOfNumbersInput] = useState(100);
 
-  private firstAlgorithm = "function sort(list) {\n\tvar i = 0;\n\tsoralvi.traceIndex('i', i);\n\n\twhile (i < list.length - 1) {\n\t\tvar minIndex = i;\n\t\tsoralvi.traceIndex('minIndex', minIndex);\n\n\t\tvar j = i;\n\t\tsoralvi.traceIndex('j', j);\n\n\t\twhile (j < list.length) {\n\t\t\tif (list[minIndex] > list[j]) {\n\t\t\t\tminIndex = j;\n\t\t\t\tsoralvi.traceIndex('minIndex', minIndex);\n\t\t\t}\n\t\t\tj++;\n\t\t\tsoralvi.traceIndex('j', j);\n\t\t}\n\t\tsoralvi.swapValues(i, minIndex);\n\n\t\ti++;\n\t\tsoralvi.traceIndex('i', i);\n\t}\n}\n"
+  const monacoEditorContainer = createRef<HTMLDivElement>();
+  const visualizerContainer = createRef<HTMLDivElement>();
 
-  private stepsPerSecond = 20
-  private stepInterval = 1000 / this.stepsPerSecond
-  private lastFrameTime: DOMHighResTimeStamp | undefined
-  private visualizerCanvas: HTMLCanvasElement | undefined
-  private ctx: CanvasRenderingContext2D | null | undefined
+  const firstAlgorithm =
+    "function sort(list) {\n\tvar i = 0;\n\tsoralvi.traceIndex('i', i);\n\n\twhile (i < list.length - 1) {\n\t\tvar minIndex = i;\n\t\tsoralvi.traceIndex('minIndex', minIndex);\n\n\t\tvar j = i;\n\t\tsoralvi.traceIndex('j', j);\n\n\t\twhile (j < list.length) {\n\t\t\tif (list[minIndex] > list[j]) {\n\t\t\t\tminIndex = j;\n\t\t\t\tsoralvi.traceIndex('minIndex', minIndex);\n\t\t\t}\n\t\t\tj++;\n\t\t\tsoralvi.traceIndex('j', j);\n\t\t}\n\t\tsoralvi.swapValues(i, minIndex);\n\n\t\ti++;\n\t\tsoralvi.traceIndex('i', i);\n\t}\n}\n";
 
-  private algorithmEngine: AlgorithmEngine = new AlgorithmEngine()
+  const stepsPerSecond = 20;
+  const stepInterval = 1000 / stepsPerSecond;
+  const [visualizerCanvas] = useState(document.createElement("canvas"));
 
-  constructor(props: {}) {
-    super(props)
+  useEffect(() => {
+    if (
+      monacoEditorContainer.current &&
+      visualizerContainer.current &&
+      !monacoEditor
+    ) {
+      console.log("creating monaco");
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      monacoEditor = monaco.editor.create(monacoEditorContainer.current, {
+        value: firstAlgorithm,
+        language: "javascript",
+      });
 
-    this.state = {
-      isPlayMode: false,
-      numberOfNumbersInput: 100,
-    };
-
-    (window as any)['ae'] = this.algorithmEngine
-  }
-
-  componentDidMount() {
-    if (this.monacoEditorContainer) {
-      console.log('creating monaco')
-      this.monacoEditor = monaco.editor.create(this.monacoEditorContainer, {
-        value: this.firstAlgorithm,
-        language: 'javascript',
-      })
+      console.log("creating canvas");
+      visualizerContainer.current.appendChild(visualizerCanvas);
+      visualizerCanvas.width = visualizerContainer.current.clientWidth;
+      visualizerCanvas.height = visualizerContainer.current.clientHeight;
     }
-    if (this.visualizerContainer) {
-      console.log('creating canvas')
-      this.visualizerCanvas = document.createElement('canvas')
-      this.visualizerContainer.appendChild(this.visualizerCanvas)
-      this.visualizerCanvas.width = this.visualizerContainer.clientWidth
-      this.visualizerCanvas.height = this.visualizerContainer.clientHeight
-      this.ctx = this.visualizerCanvas.getContext('2d');
+  }, []);
+
+  const generateNumbersToSort = () => {
+    algen.createNew(numberOfNumbersInput);
+    drawNumbers();
+  };
+
+  const runAlgorithm = () => {
+    if (monacoEditor) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+      algen.runAlgorithm(monacoEditor.getValue());
     }
-  }
+  };
 
-  public generateNumbersToSort = () => {
-    this.algorithmEngine.createNew(this.state.numberOfNumbersInput)
-    this.drawNumbers()
-  }
-
-  public runAlgorithm = () => {
-    if (this.monacoEditor) {
-      this.algorithmEngine.runAlgorithm(this.monacoEditor.getValue())
-    }
-  }
-
-  playPause = () => {
-    if (this.state.isPlayMode) {
-      if (this.monacoEditor) {
-        this.monacoEditor.updateOptions({
-          readOnly: false
-        })
+  const playPause = () => {
+    if (isPlayMode) {
+      if (monacoEditor) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+        monacoEditor.updateOptions({
+          readOnly: false,
+        });
       }
-      this.setState({
-        ...this.state,
-        isPlayMode: false,
-      })
-    }
-    else {
-      if (this.monacoEditor) {
-        this.monacoEditor.updateOptions({
-          readOnly: true
-        })
-      }
-      this.setState({
-        ...this.state,
-        isPlayMode: true,
-      }, () => {
-        this.animationLoop(undefined)
-      })
-    }
-  }
-
-  animationLoop = (time: DOMHighResTimeStamp | undefined) => {
-    if (this.lastFrameTime && time) {
-      if (time - this.lastFrameTime > this.stepInterval) {
-        this.lastFrameTime = time
-        this.drawNumbers()
-        if (!this.algorithmEngine.step()) {
-          if (this.monacoEditor) {
-            this.monacoEditor.updateOptions({
-              readOnly: false
-            })
-          }
-          this.setState({
-            ...this.state,
-            isPlayMode: false,
-          })
-        }
-      }
+      setIsPlayMode(false);
     } else {
-      this.lastFrameTime = time
-      this.drawNumbers()
+      if (monacoEditor) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+        monacoEditor.updateOptions({
+          readOnly: true,
+        });
+      }
+      setIsPlayMode(true);
     }
+  };
 
-    if (this.state.isPlayMode) {
-      window.requestAnimationFrame(this.animationLoop)
-    }
-  }
+  const drawNumbers = useCallback(() => {
+    const ctx = visualizerCanvas.getContext("2d");
+    if (visualizerCanvas && ctx) {
+      ctx.clearRect(0, 0, visualizerCanvas.width, visualizerCanvas.height);
 
-  drawNumbers = () => {
-    if (this.visualizerCanvas && this.ctx) {
-      this.ctx.clearRect(0, 0, this.visualizerCanvas.width, this.visualizerCanvas.height)
+      const barWidth = visualizerCanvas.width / algen.numberOfNumbers;
+      const barMaxHeight = visualizerCanvas.height;
+      const maxValue = Math.max(...algen.numbersToSort);
 
-      const barWidth = this.visualizerCanvas.width / this.algorithmEngine.numberOfNumbers
-      const barMaxHeight = this.visualizerCanvas.height
-      const maxValue = Math.max(...this.algorithmEngine.numbersToSort)
+      const highlights = algen.currentHighlights.map((x) => x.i);
 
-      const highlights = this.algorithmEngine.currentHighlights.map(x => x.i)
-
-      for (let i = 0; i < this.algorithmEngine.numberOfNumbers; i++) {
-        const numberToSort = this.algorithmEngine.numbersToSort[i];
-        this.ctx.fillStyle = highlights.indexOf(i) >= 0 ? 'red' : 'black'
-        this.ctx.fillRect(i * barWidth, barMaxHeight, barWidth, -barMaxHeight * (numberToSort / maxValue))
+      for (let i = 0; i < algen.numberOfNumbers; i++) {
+        const numberToSort = algen.numbersToSort[i];
+        ctx.fillStyle = highlights.indexOf(i) >= 0 ? "red" : "black";
+        ctx.fillRect(
+          i * barWidth,
+          barMaxHeight,
+          barWidth,
+          -barMaxHeight * (numberToSort / maxValue)
+        );
       }
     }
-  }
+  }, [visualizerCanvas]);
 
-  render(): React.ReactNode {
-    return (
-      <div id="main">
-        <div id="visualizerContainer" ref={ref => this.visualizerContainer = ref}></div>
-        <div id="editorPanel">
-          <div id="monacoEditorContainer" ref={ref => this.monacoEditorContainer = ref}></div>
-          {/* <div className='padding'>
+  const animationLoop = useCallback(
+    (time: DOMHighResTimeStamp | undefined) => {
+      if (lastFrameTime && time) {
+        if (time - lastFrameTime > stepInterval) {
+          lastFrameTime = time;
+          drawNumbers();
+          if (!algen.step()) {
+            if (monacoEditor) {
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+              monacoEditor.updateOptions({
+                readOnly: false,
+              });
+            }
+            setIsPlayMode(false);
+          }
+        }
+      } else {
+        lastFrameTime = time;
+        drawNumbers();
+      }
+
+      if (isPlayMode) {
+        window.requestAnimationFrame(animationLoop);
+      }
+    },
+    [drawNumbers, isPlayMode, stepInterval]
+  );
+
+  useEffect(() => {
+    if (isPlayMode) {
+      animationLoop(undefined);
+    }
+  }, [animationLoop, isPlayMode]);
+
+  return (
+    <div id="main">
+      <div id="visualizerContainer" ref={visualizerContainer}></div>
+      <div id="editorPanel">
+        <div id="monacoEditorContainer" ref={monacoEditorContainer}></div>
+        {/* <div className='padding'>
             <Slider defaultValue={50} />
           </div> */}
-          <div className='panel-actions'>
-            <div className='number-input'>
-              <TextField disabled={this.state.isPlayMode} type="number" value={this.state.numberOfNumbersInput} onChange={e => this.setState({ ...this.state, numberOfNumbersInput: +e.target.value })} label="Number of Elements" variant="filled" />
-              <Button disabled={this.state.isPlayMode} onClick={_ => this.generateNumbersToSort()} variant="outlined">Create</Button>
-            </div>
-            <Button onClick={_ => this.runAlgorithm()} disabled={this.state.isPlayMode} variant="outlined">Execute Algorithm</Button>
-            <Button onClick={_ => this.playPause()} variant="contained">{this.state.isPlayMode ? 'Pause' : 'Play'}</Button>
-            <Link href="https://github.com/Enc-EE/SorAlVi" target="_blank" >See Project on GitHub</Link>
+        <div className="panel-actions">
+          <div className="number-input">
+            <TextField
+              disabled={isPlayMode}
+              type="number"
+              value={numberOfNumbersInput}
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+              onChange={(e) => setNumberOfNumbersInput(+e.target.value)}
+              label="Number of Elements"
+              variant="filled"
+            />
+            <Button
+              disabled={isPlayMode}
+              onClick={() => generateNumbersToSort()}
+              variant="outlined"
+            >
+              Create
+            </Button>
           </div>
+          <Button
+            onClick={() => runAlgorithm()}
+            disabled={isPlayMode}
+            variant="outlined"
+          >
+            Execute Algorithm
+          </Button>
+          <Button onClick={() => playPause()} variant="contained">
+            {isPlayMode ? "Pause" : "Play"}
+          </Button>
+          <Link href="https://github.com/Enc-EE/SorAlVi" target="_blank">
+            See Project on GitHub
+          </Link>
         </div>
       </div>
-    )
-  }
-}
+    </div>
+  );
+};

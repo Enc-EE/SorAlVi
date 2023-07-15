@@ -1,5 +1,5 @@
 # Sorting Algorithm Visualizer (SorAlVi)
 
-Deployed to [https://soralvi.herokuapp.com/](https://soralvi.herokuapp.com/)
+Deployed to [https://soralvi.erics-apps.de/](https://soralvi.erics-apps.de/)
 
 ![Preview](public/preview.png)
